@@ -28,11 +28,13 @@ hf-login:
 	git pull origin update
 	git switch update
 	pip install -U "huggingface_hub[cli]"
-	python -m huggingface_hub.cli login --token $(HF)
+	export PATH="$$HOME/.local/bin:$$PATH"
+	huggingface-cli login --token $(HF) --add-to-git-credential
 
 push-hub:
-	python -m huggingface_hub.cli upload IqraSAYEDhassan/DrugClassifier ./App --repo-type=space --commit-message="Sync App"
-	python -m huggingface_hub.cli upload IqraSAYEDhassan/DrugClassifier ./Model /Model --repo-type=space --commit-message="Sync Model"
-	python -m huggingface_hub.cli upload IqraSAYEDhassan/DrugClassifier ./Results /Results --repo-type=space --commit-message="Sync Results"
+	export PATH="$$HOME/.local/bin:$$PATH"
+	huggingface-cli upload IqraSAYEDhassan/DrugClassifier ./App --repo-type=space --commit-message="Sync App files"
+	huggingface-cli upload IqraSAYEDhassan/DrugClassifier ./Model /Model --repo-type=space --commit-message="Sync Model"
+	huggingface-cli upload IqraSAYEDhassan/DrugClassifier ./Results /Results --repo-type=space --commit-message="Sync Results"
 
 deploy: hf-login push-hub
