@@ -26,15 +26,19 @@ update-branch:
 	git push --force origin HEAD:update
 
 hf-login:
-	# Install the CLI
+	# Install the library
 	pip install -U "huggingface_hub[cli]"
-	# FIX: Run directly via python to avoid PATH issues
-	python -m huggingface_hub.cli login --token $(HF) --add-to-git-credential
+	
+	# FIX: Dynamically find the path to the 'huggingface-cli' script 
+	# (It lives in the same folder as the python executable)
+	CLI_PATH=$$(dirname $$(which python))/huggingface-cli; \
+	$$CLI_PATH login --token $(HF) --add-to-git-credential
 
 push-hub:
-	# FIX: Run directly via python here as well
-	python -m huggingface_hub.cli upload IqraSAYEDhassan/DrugClassifier ./App --repo-type=space --commit-message="Sync App"
-	python -m huggingface_hub.cli upload IqraSAYEDhassan/DrugClassifier ./Model /Model --repo-type=space --commit-message="Sync Model"
-	python -m huggingface_hub.cli upload IqraSAYEDhassan/DrugClassifier ./Results /Results --repo-type=space --commit-message="Sync Results"
+	# Use the same dynamic path logic for uploads
+	CLI_PATH=$$(dirname $$(which python))/huggingface-cli; \
+	$$CLI_PATH upload IqraSAYEDhassan/DrugClassifier ./App --repo-type=space --commit-message="Sync App" && \
+	$$CLI_PATH upload IqraSAYEDhassan/DrugClassifier ./Model /Model --repo-type=space --commit-message="Sync Model" && \
+	$$CLI_PATH upload IqraSAYEDhassan/DrugClassifier ./Results /Results --repo-type=space --commit-message="Sync Results"
 
 deploy: hf-login push-hub
