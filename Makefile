@@ -6,3 +6,13 @@ format:
 
 train:
 	python train.py
+
+eval:
+	echo "## Model Metrics" > report.md
+	cat Results/metrics.txt >> report.md
+
+	echo "" >> report.md
+	echo "## Confusion Matrix" >> report.md
+	echo "![Confusion Matrix](./Results/model_results.png)" >> report.md
+
+	cml comment create report.md

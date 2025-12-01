@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: MLOps CI Pipeline
 
 on:
   push:
@@ -7,24 +7,42 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+permissions:
+  contents: write   # Needed so CML can post comments
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # 1. Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2. Setup Python
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
+      # 3. Setup CML (for PR/commit comment)
+      - name: Setup CML
+        uses: iterative/setup-cml@v2
+
+      # 4. Install dependencies
       - name: Install dependencies
         run: make install
 
+      # 5. Format code
       - name: Format code
         run: make format
 
+      # 6. Train the model
       - name: Train model
         run: make train
+
+      # 7. Evaluate and post comment under commit
+      - name: Post model metrics as comment
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: make eval
