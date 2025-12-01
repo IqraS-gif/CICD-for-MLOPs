@@ -1,4 +1,4 @@
-name: MLOps CI Pipeline
+name: Continuous Integration
 
 on:
   push:
@@ -8,41 +8,37 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # Needed so CML can post comments
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # 2. Setup Python
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      # 3. Setup CML (for PR/commit comment)
-      - name: Setup CML
-        uses: iterative/setup-cml@v2
+      - uses: iterative/setup-cml@v2
 
-      # 4. Install dependencies
-      - name: Install dependencies
+      - name: Install
         run: make install
 
-      # 5. Format code
-      - name: Format code
+      - name: Format
         run: make format
 
-      # 6. Train the model
-      - name: Train model
+      - name: Train
         run: make train
 
-      # 7. Evaluate and post comment under commit
-      - name: Post model metrics as comment
+      - name: Evaluate & Comment
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: make eval
+
+      - name: Update Branch
+        env:
+          NAME: ${{ secrets.USER_NAME }}
+          EMAIL: ${{ secrets.USER_EMAIL }}
+        run: make update-branch USER_NAME=$NAME USER_EMAIL=$EMAIL
