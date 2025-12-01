@@ -26,19 +26,24 @@ update-branch:
 	git push --force origin HEAD:update
 
 hf-login:
-	# Install the library
-	pip install -U "huggingface_hub[cli]"
+	# Install the library (v1+ removes the old CLI, so we use Python below)
+	pip install -U huggingface_hub
 	
-	# FIX: Dynamically find the path to the 'huggingface-cli' script 
-	# (It lives in the same folder as the python executable)
-	CLI_PATH=$$(dirname $$(which python))/huggingface-cli; \
-	$$CLI_PATH login --token $(HF) --add-to-git-credential
+	# FIX: Use Python to login directly. 
+	# Passing token via env var (HF_TOKEN) is safer than arguments.
+	HF_TOKEN=$(HF) python -c "from huggingface_hub import login; import os; login(token=os.environ['HF_TOKEN'], add_to_git_credential=True)"
 
 push-hub:
-	# Use the same dynamic path logic for uploads
-	CLI_PATH=$$(dirname $$(which python))/huggingface-cli; \
-	$$CLI_PATH upload IqraSAYEDhassan/DrugClassifier ./App --repo-type=space --commit-message="Sync App" && \
-	$$CLI_PATH upload IqraSAYEDhassan/DrugClassifier ./Model /Model --repo-type=space --commit-message="Sync Model" && \
-	$$CLI_PATH upload IqraSAYEDhassan/DrugClassifier ./Results /Results --repo-type=space --commit-message="Sync Results"
+	# FIX: Use Python to upload folders directly.
+	# This uses the 'upload_folder' API which is robust and handles large files automatically.
+	
+	# 1. Upload App to Root
+	python -c "from huggingface_hub import HfApi; HfApi().upload_folder(repo_id='IqraSAYEDhassan/DrugClassifier', folder_path='./App', path_in_repo='.', repo_type='space', commit_message='Sync App')"
+	
+	# 2. Upload Model to /Model
+	python -c "from huggingface_hub import HfApi; HfApi().upload_folder(repo_id='IqraSAYEDhassan/DrugClassifier', folder_path='./Model', path_in_repo='Model', repo_type='space', commit_message='Sync Model')"
+	
+	# 3. Upload Results to /Results
+	python -c "from huggingface_hub import HfApi; HfApi().upload_folder(repo_id='IqraSAYEDhassan/DrugClassifier', folder_path='./Results', path_in_repo='Results', repo_type='space', commit_message='Sync Results')"
 
 deploy: hf-login push-hub
