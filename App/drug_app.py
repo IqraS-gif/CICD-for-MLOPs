@@ -1,8 +1,9 @@
 import gradio as gr
 import skops.io as sio
 
-# Load the model with trusted=True to avoid security errors
-pipe = sio.load("./Model/drug_pipeline.skops", trusted=True)
+# FIX: Get the types used in the file and trust them
+unknown_types = sio.get_untrusted_types(file="./Model/drug_pipeline.skops")
+pipe = sio.load("./Model/drug_pipeline.skops", trusted=unknown_types)
 
 def predict_drug(age, sex, blood_pressure, cholesterol, na_to_k_ratio):
     """Predict drugs based on patient features."""
