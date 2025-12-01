@@ -1,4 +1,4 @@
-# Ensures all commands in a target run in one shell, preserving exports
+# 1. Keeps the session alive so 'export PATH' works in all targets
 .ONESHELL:
 
 install:
@@ -21,15 +21,16 @@ eval:
 update-branch:
 	git config --global user.name "$(USER_NAME)"
 	git config --global user.email "$(USER_EMAIL)"
-	git add Model Results report.md
-	git commit -m "Update with new results"
+	# 2. CRITICAL FIX: Add Makefile and App folder so fixes propagate to the update branch
+	git add Model Results report.md Makefile App .github
+	git commit -m "Update model, results, and pipeline code" || echo "No changes to commit"
 	git push --force origin HEAD:update
 
 hf-login:
-	# Removed git switch/pull; the workflow handles this now.
 	pip install -U "huggingface_hub[cli]"
+	# 3. Add local bin to PATH
 	export PATH="$$HOME/.local/bin:$$PATH"
-	# Check if command exists before running
+	# 4. Use the correct CLI command
 	huggingface-cli login --token $(HF) --add-to-git-credential
 
 push-hub:
