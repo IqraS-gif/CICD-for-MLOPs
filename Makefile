@@ -1,3 +1,6 @@
+# Ensures all commands in a target run in one shell, preserving exports
+.ONESHELL:
+
 install:
 	pip install -r requirements.txt
 
@@ -10,11 +13,9 @@ train:
 eval:
 	echo "## Model Metrics" > report.md
 	cat Results/metrics.txt >> report.md
-
 	echo "" >> report.md
 	echo "## Confusion Matrix" >> report.md
 	echo "![Confusion Matrix](./Results/model_results.png)" >> report.md
-
 	cml comment create report.md
 
 update-branch:
@@ -25,16 +26,16 @@ update-branch:
 	git push --force origin HEAD:update
 
 hf-login:
-	git pull origin update
-	git switch update
+	# Removed git switch/pull; the workflow handles this now.
 	pip install -U "huggingface_hub[cli]"
 	export PATH="$$HOME/.local/bin:$$PATH"
-	huggingface login --token $(HF) --add-to-git-credential
+	# Check if command exists before running
+	huggingface-cli login --token $(HF) --add-to-git-credential
 
 push-hub:
 	export PATH="$$HOME/.local/bin:$$PATH"
-	huggingface upload IqraSAYEDhassan/DrugClassifier ./App --repo-type=space --commit-message="Sync App"
-	huggingface upload IqraSAYEDhassan/DrugClassifier ./Model /Model --repo-type=space --commit-message="Sync Model"
-	huggingface upload IqraSAYEDhassan/DrugClassifier ./Results /Results --repo-type=space --commit-message="Sync Results"
+	huggingface-cli upload IqraSAYEDhassan/DrugClassifier ./App --repo-type=space --commit-message="Sync App"
+	huggingface-cli upload IqraSAYEDhassan/DrugClassifier ./Model /Model --repo-type=space --commit-message="Sync Model"
+	huggingface-cli upload IqraSAYEDhassan/DrugClassifier ./Results /Results --repo-type=space --commit-message="Sync Results"
 
 deploy: hf-login push-hub

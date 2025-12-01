@@ -4,15 +4,23 @@ on:
   workflow_run:
     workflows: ["Continuous Integration"]
     types: [completed]
-
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code (Update Branch)
+        uses: actions/checkout@v3
+        with:
+          ref: update  # Crucial: Checkout the branch with the artifacts!
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
       - name: Deploy to Hugging Face Space
         env:
