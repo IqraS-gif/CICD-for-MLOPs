@@ -1,25 +1,74 @@
 name: Continuous Integration
+
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
-  
-permissions: write-all
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: iterative/setup-cml@v2
-      - name: Install Packages
+      # -----------------------------
+      # 1) Checkout code
+      # -----------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # -----------------------------
+      # 2) DEBUG — show where we are
+      # -----------------------------
+      - name: Print working directory
+        run: pwd
+
+      - name: List all files
+        run: ls -R
+
+      - name: Show requirements
+        run: cat requirements.txt
+
+      # -----------------------------
+      # 3) Setup Python
+      # -----------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      # -----------------------------
+      # 4) Setup CML for PR comments
+      # -----------------------------
+      - name: Setup CML
+        uses: iterative/setup-cml@v2
+
+      # -----------------------------
+      # 5) Install dependencies
+      # -----------------------------
+      - name: Install dependencies
         run: make install
-      - name: Format
+
+      # -----------------------------
+      # 6) Format code
+      # -----------------------------
+      - name: Format code
         run: make format
-      - name: Train
+
+      # -----------------------------
+      # 7) Train model
+      # -----------------------------
+      - name: Train model
         run: make train
-      - name: Evaluation
+
+      # -----------------------------
+      # 8) Evaluate and write CML report
+      # -----------------------------
+      - name: Evaluate and comment
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: make eval
