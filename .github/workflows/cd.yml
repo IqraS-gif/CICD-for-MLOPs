@@ -14,8 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Deploy to Hugging Face
+      - name: Deploy to Hugging Face Space
         env:
           HF: ${{ secrets.HF }}
-          SPACE_NAME: ${{ secrets.SPACE_NAME }}
-        run: make deploy HF=$HF SPACE_NAME=$SPACE_NAME
+        run: make deploy HF=$HF
