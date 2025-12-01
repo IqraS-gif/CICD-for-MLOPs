@@ -1,6 +1,6 @@
 ---
 title: DrugClassifier
-emoji: 🔥
+emoji: 🎀
 colorFrom: yellow
 colorTo: blue
 sdk: gradio
